@@ -313,8 +313,7 @@ function draw(){
   ctx.fillRect(0,0,480,720);
 
   // ===== 自機 =====
-  if(player.inv%10<5) ctx.fillStyle="cyan";
-  else ctx.fillStyle="white";
+  ctx.fillStyle = (player.inv%10<5) ? "cyan" : "white";
 
   ctx.beginPath();
   ctx.arc(player.x,player.y,6,0,Math.PI*2);
@@ -334,8 +333,21 @@ function draw(){
     ctx.stroke();
   }
 
-  // ===== ボス（回転星）=====
+  // ===== ボス描画 =====
   if(boss.active){
+
+    // ステージごとの色
+    function getBossColor(){
+      switch(stage){
+        case 1: return "deepskyblue";
+        case 2: return "lime";
+        case 3: return "orange";
+        case 4: return "magenta";
+        default: return "red";
+      }
+    }
+
+    const bossColor = getBossColor();
 
     function drawStar(outer, inner, points){
       ctx.beginPath();
@@ -355,20 +367,27 @@ function draw(){
     ctx.translate(boss.x,boss.y);
     ctx.rotate(boss.angle);
 
-    ctx.shadowColor="cyan";
+    ctx.shadowColor=bossColor;
     ctx.shadowBlur=25;
 
-    ctx.fillStyle="deepskyblue";
+    ctx.fillStyle=bossColor;
     drawStar(36,14,5);
 
     ctx.restore();
 
-    // ===== HPバー =====
-    ctx.fillStyle="red";
-    ctx.fillRect(20,10,440,12);
+    // ===== HPバー背景 =====
+    ctx.fillStyle="#300";
+    ctx.fillRect(20,10,440,14);
 
-    ctx.fillStyle="lime";
-    ctx.fillRect(20,10,440*(boss.hp/boss.maxHp),12);
+    // ===== HPバー グラデーション =====
+    const hpRatio = boss.hp/boss.maxHp;
+    const grad = ctx.createLinearGradient(20,0,460,0);
+    grad.addColorStop(0,"red");
+    grad.addColorStop(0.5,"yellow");
+    grad.addColorStop(1,"lime");
+
+    ctx.fillStyle=grad;
+    ctx.fillRect(20,10,440*hpRatio,14);
   }
 
   // ===== 自機ショット =====
@@ -386,14 +405,13 @@ function draw(){
   });
 
   // ===== エフェクト =====
+  ctx.fillStyle="orange";
   effects.forEach(e=>{
     if(e.big){
-      ctx.fillStyle="orange";
       ctx.beginPath();
       ctx.arc(e.x,e.y,4,0,Math.PI*2);
       ctx.fill();
     }else{
-      ctx.fillStyle="orange";
       ctx.fillRect(e.x,e.y,2,2);
     }
   });
@@ -415,25 +433,27 @@ function draw(){
     ctx.fillText("PAUSED",200,360);
   }
 
-  // ===== 自機位置ガイド矢印 =====
+  // ===== 自機位置ガイド矢印（内向き）=====
   ctx.fillStyle="white";
 
-  // ▶ 右端（Y位置）
+  // ◀ 右端 → 左向き
   ctx.beginPath();
-  ctx.moveTo(470, player.y);
-  ctx.lineTo(458, player.y-10);
-  ctx.lineTo(458, player.y+10);
+  ctx.moveTo(462, player.y);
+  ctx.lineTo(474, player.y-10);
+  ctx.lineTo(474, player.y+10);
   ctx.closePath();
   ctx.fill();
 
-  // ▲ 下側（X位置）
+  // ▲ 下側 → 上向き
   ctx.beginPath();
-  ctx.moveTo(player.x, 710);
-  ctx.lineTo(player.x-10, 698);
-  ctx.lineTo(player.x+10, 698);
+  ctx.moveTo(player.x, 702);
+  ctx.lineTo(player.x-10, 714);
+  ctx.lineTo(player.x+10, 714);
   ctx.closePath();
   ctx.fill();
 }
+
+
 
 
 function overlayLoop(){
